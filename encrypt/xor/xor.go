@@ -1,7 +1,7 @@
 package xor 
 
 func XorBytes(data, key []byte) []byte {
-	// masked
+	// masked variable
 	masked := make([]byte, len(data))
 	// key length
 	keyLen := len(key)
@@ -9,6 +9,6 @@ func XorBytes(data, key []byte) []byte {
 	for i, b := range data {
 		masked[i] = b ^ key[i % keyLen]
 	}
-	// returned the converted code
+	// returned the converted / resulting code
 	return masked
 }

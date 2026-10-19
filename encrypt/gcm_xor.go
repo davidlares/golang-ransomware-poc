@@ -27,9 +27,9 @@ func encryptWithXorAndAES(id int, filename, keyFile string) error {
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		return fmt.Errorf("Invalid key length: %d bytes. Key must be 16, 24, or 32 bytes long", len(key))
 	}
-	// masked data 
+	// masked data (calling the file)
 	maskedData := xor.XorBytes(infile, []byte(xorKey))
-	// block 
+	// generating the block
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return fmt.Errorf("Error creating AES cipher: %w", err)

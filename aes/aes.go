@@ -20,7 +20,9 @@ func generateKeys() (string, error) {
 }
 
 func saveKeyFile(filename string) error {
+	// generate keys for AES
 	key, err := generateKeys()
+	// evaluating
 	if err != nil {
 		return fmt.Errorf("Error to save generate file key: %v", err)
 	}
