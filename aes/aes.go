@@ -1,13 +1,13 @@
 package aes
 
 import (
-	"encoding/hex"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
 )
 
-func generateKeys() (string, error) {
+func GenerateKeys() (string, error) {
 	// key generation
 	key := make([]byte, 16)
 	// generating random key
@@ -16,12 +16,12 @@ func generateKeys() (string, error) {
 		return "", fmt.Errorf("Error generating AES key: %v", err)
 	}
 	// returning the key as a hex string
-	return hex.EncodeToString(key)
+	return hex.EncodeToString(key), nil
 }
 
-func saveKeyFile(filename string) error {
+func SaveKeyFile(filename string) error {
 	// generate keys for AES
-	key, err := generateKeys()
+	key, err := GenerateKeys()
 	// evaluating
 	if err != nil {
 		return fmt.Errorf("Error to save generate file key: %v", err)
