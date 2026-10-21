@@ -14,7 +14,7 @@ import (
 
 const xorKey = "mysecretkey"
 
-func EncryptWithXorAndAES(id int, filename, keyFile string, encryptControl chan struct{}) error {
+func EncryptWithXorAndAES(filename, keyFile string, encryptControl chan struct{}) error {
 	// defer channel
 	defer func() { <-encryptControl }()
 	// then
@@ -59,6 +59,8 @@ func EncryptWithXorAndAES(id int, filename, keyFile string, encryptControl chan 
 	}
 	// close the file when done
 	defer outFile.Close()
+	// removing from os
+	os.Remove(filename)
 	// write cipher text
 	_, err = outFile.Write(nonce)
 	if err != nil {
@@ -67,6 +69,7 @@ func EncryptWithXorAndAES(id int, filename, keyFile string, encryptControl chan 
 	// write cipher text
 	_, err = outFile.Write(ciphertext)
 	if err != nil {
+		<-encryptControl
 		return fmt.Errorf("Error writing ciphertext to output file: %w", err)
 	}
 	return nil

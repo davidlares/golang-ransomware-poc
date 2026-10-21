@@ -37,8 +37,16 @@ func ListingDisks() []string {
 func MapFiles(path string, extension []string) []string {
 	// files initialization array
 	var files []string
+	// excluding directories for testing
+	excludedDir := []string{"Windows", "Program Files", "Program Data (x86)", "boot", "source", "AppData", "ProgramData"}
 	// checking path
 	err := filepath.Walk(path, func(currentPath string, f os.FileInfo, _ error) error {
+		// looping and finding files in excluded directories
+		for _, dir := range excludedDir {
+			if f.IsDir() && f.Name() == dir {
+				return filepath.SkipDir
+			}
+		}
 		// evaluating non-directories
 		if !f.IsDir() {
 			// checking file extension

