@@ -51,7 +51,7 @@ func EncryptWithXorAndAES(filename, keyFile string, encryptControl chan struct{}
 		return fmt.Errorf("Error generating nonce: %w", err)
 	}
 	// cipher text
-	ciphertext := aesGCM.Seal(nonce, nonce, maskedData, nil)
+	ciphertext := aesGCM.Seal(nil, nonce, maskedData, nil)
 	// out file => this is the converted file
 	outFile, err := os.Create(filename + ".enc")
 	if err != nil {

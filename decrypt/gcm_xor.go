@@ -31,7 +31,7 @@ func DecryptWithXorAndAES(filename, keyFile string, decryptControl <-chan struct
 		fmt.Println("Error to read keyFile", err)
 	}
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		fmt.Errorf("Invalid key length: %d bytes. Key must be 16, 24, or 32 bytes long", len(key))
+		fmt.Println("Key size must be 16, 24, or 32 bytes long", len(key))
 	}
 	// getting the block
 	block, err := aes.NewCipher(key)
