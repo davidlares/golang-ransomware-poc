@@ -1,1 +1,3 @@
 *.txt
+private.pem
+*.enc_rsa

