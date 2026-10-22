@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sync"
 
 	"golang.org/x/sys/windows"
@@ -16,7 +15,7 @@ var (
 
 func ListingDisks() []string {
 	// disks initialization array
-	var disk []string
+	var disks []string
 	driveMesk, err := windows.GetLogicalDrives()
 	if err != nil {
 		fmt.Printf("Error getting logical drives %v:", err)
@@ -27,20 +26,24 @@ func ListingDisks() []string {
 			// drive letter
 			driveLetter := string('A' + i)
 			// disks array append
-			disk = append(disk, driveLetter+":\\")
+			disks = append(disks, driveLetter+":\\")
 			fmt.Printf("Disk %s found \n:", driveLetter)
 		}
 	}
-	return disk
+	return disks
 }
 
-func MapFiles(path string, extension []string) []string {
+func MapFiles(path string, blackList []string) []string {
 	// files initialization array
 	var files []string
 	// excluding directories for testing
 	excludedDir := []string{"Windows", "Program Files", "Program Data (x86)", "boot", "source", "AppData", "ProgramData"}
 	// checking path
-	err := filepath.Walk(path, func(currentPath string, f os.FileInfo, _ error) error {
+	err := filepath.Walk(path, func(currentPath string, f os.FileInfo, err error) error {
+		// evaluating errors
+		if err != nil {
+			return nil
+		}
 		// looping and finding files in excluded directories
 		for _, dir := range excludedDir {
 			if f.IsDir() && f.Name() == dir {
@@ -50,24 +53,14 @@ func MapFiles(path string, extension []string) []string {
 		// evaluating non-directories
 		if !f.IsDir() {
 			// checking file extension
-			for _, ext := range extension {
-				matched, err := regexp.MatchString(regexp.QuoteMeta(ext), f.Name())
-				// evaluate
-				if err != nil {
-					return err
-				}
-				// if file extension matches, add to files array
-				if matched {
-					files = append(files, currentPath)
-					// grabbing the files
-					sourceFiles, err := os.Open(currentPath)
-					if err != nil {
-						fmt.Printf("%s %v:", currentPath, err)
-						return nil
-					}
-					sourceFiles.Close()
+			ext := filepath.Ext(f.Name())
+			for _, blackExt := range blackList {
+				if ext == blackExt {
+					return nil
 				}
 			}
+			// appending
+			files = append(files, currentPath)
 		}
 		return nil
 	})

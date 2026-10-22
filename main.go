@@ -1,7 +1,7 @@
 package main
 
 import (
-	"davidlares/ransomware/cmd"
+	"davidlares/golang-ransomware-poc/cmd"
 )
 
 func main() {

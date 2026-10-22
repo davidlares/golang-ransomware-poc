@@ -33,7 +33,7 @@ func GenerateRSAPubAndPrivateKey(rsa_priv, rsa_pub string) {
 	publicKeyBytes := x509.MarshalPKCS1PublicKey(publicKey)
 	// getting the public bytes
 	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "PUBLIC KEY",
+		Type:  "RSA PUBLIC KEY",
 		Bytes: publicKeyBytes,
 	})
 	// writing key to file with permission
